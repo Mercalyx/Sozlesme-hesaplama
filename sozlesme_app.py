@@ -10,7 +10,7 @@ st.markdown("---")
 # Şirket/Acenta bilgileri
 st.header("👤 Şirket / Acenta Bilgileri")
 misafir_adi = st.text_input("Şirket veya Acenta Adı", "")
-Tursab = st.radio("TURSAB Üyesi mi?", ["Evet", "Hayır"])
+Tursab = st.radio("TURSAB Üyesi mi?", ["Hayır", "Evet"])
 
 st.markdown("---")
 
@@ -193,6 +193,8 @@ data = {
     "Şirket/Acenta": [misafir_adi],
     "Konaklama (KDV Hariç)": [vergisiz_konaklama],
     "Etkinlik (KDV Hariç)": [vergisiz_etkinlik],
+    "Konaklama (KDV Dahil)": [vergisiz_konaklama * 1.12],
+    "Etkinlik (KDV Dahil)": [vergisiz_etkinlik * 1.20],
     "Toplam KDV": [vergi_konaklama + vergi_etkinlik],
     "Damga Vergisi": [damga_vergisi],
     "Genel Toplam": [toplam_tutar],
