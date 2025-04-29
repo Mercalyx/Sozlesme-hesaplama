@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import io
 
 st.set_page_config(page_title="Sözleşme Hesaplama Robotu", page_icon="🧾")
 
@@ -21,88 +22,125 @@ sembol = para_birimleri[secili_para_birimi]
 
 st.markdown("---")
 
-# Süre Bilgileri
-st.header("🗓 Süre Bilgileri")
-etkinlik_gun_sayisi = st.number_input("Etkinlik Süresi (Gün)", min_value=1, value=1)
-konaklama_gun_sayisi = st.number_input("Konaklama Süresi (Gece)", min_value=1, value=1)
+# Veri Giriş Yöntemi Seçimi
+st.header("📋 Veri Giriş Yöntemi Seçimi")
+giris_yontemi = st.radio(
+    "Verileri nasıl gireceksiniz?",
+    ("Dosya Yükleyerek", "Manuel Giriş")
+)
 
 st.markdown("---")
 
-# Farklılık seçenekleri
-st.header("⚙ Bilgi Giriş Ayarları")
-etkinlik_farkli_mi = st.checkbox("Her gün için farklı etkinlik bilgisi girilsin mi?", value=True)
-oda_farkli_mi = st.checkbox("Her gün için farklı oda bilgisi girilsin mi?", value=True)
-
-etkinlik_fiyat_degisim = st.radio("Her gün etkinlik fiyatı değişiyor mu?", ["Hayır", "Evet"]) if etkinlik_farkli_mi else "Hayır"
-oda_fiyat_degisim = st.radio("Her gün oda fiyatı değişiyor mu?", ["Hayır", "Evet"]) if oda_farkli_mi else "Hayır"
-
-st.markdown("---")
-
-# Başlangıç Fiyatları
-st.header("💶 Başlangıç Oda ve Etkinlik Fiyatları")
-tek_kisilik_standart_fiyat = st.number_input("Tek Kişilik Oda Standart Fiyatı (gecelik)", min_value=0.0, value=0.0)
-cift_kisilik_standart_fiyat = st.number_input("Çift Kişilik Oda Standart Fiyatı (gecelik)", min_value=0.0, value=0.0)
-
-etkinlik_turleri = ["Toplantı", "Gala", "Kokteyl", "Öğle Yemeği", "Akşam Yemeği", "Breakout", "Kurulum"]
-standart_etkinlik_fiyatlari = {}
-for tur in etkinlik_turleri:
-    fiyat = st.number_input(f"{tur} Standart Fiyatı (Kişi Başı)", min_value=0.0, value=0.0, key=f"standart_{tur}")
-    standart_etkinlik_fiyatlari[tur] = fiyat
-
-st.markdown("---")
-
-# Oda Bilgileri
-st.header("🛏 Konaklama Bilgileri")
 oda_bilgileri = []
-for gun in range(konaklama_gun_sayisi):
-    st.subheader(f"{gun+1}. Gece Oda Bilgisi")
-    tek = st.number_input(f"Tek Kişilik Oda Sayısı (Gece {gun+1})", min_value=0, key=f"tek{gun}")
-    cift = st.number_input(f"Çift Kişilik Oda Sayısı (Gece {gun+1})", min_value=0, key=f"cift{gun}")
-
-    if oda_farkli_mi and oda_fiyat_degisim == "Evet":
-        tek_f = st.number_input(f"Tek Kişilik Oda Fiyatı (Gece {gun+1})", min_value=0.0, key=f"tekf{gun}")
-        cift_f = st.number_input(f"Çift Kişilik Oda Fiyatı (Gece {gun+1})", min_value=0.0, key=f"ciftf{gun}")
-    else:
-        tek_f = tek_kisilik_standart_fiyat
-        cift_f = cift_kisilik_standart_fiyat
-
-    oda_bilgileri.append({"tek": tek, "cift": cift, "tek_f": tek_f, "cift_f": cift_f})
-
-st.markdown("---")
-
-# Etkinlik Bilgileri
-st.header("🎤 Etkinlik Bilgileri")
 etkinlikler = []
 
-# Gerekli başlangıçlar
-if "etkinlik_sayaci" not in st.session_state:
-    st.session_state.etkinlik_sayaci = {}
+# Eğer Dosya Yüklenirse
+if giris_yontemi == "Dosya Yükleyerek":
+    st.header("📂 Booking Verisi Yükle")
+    uploaded_file = st.file_uploader("Booking Verisini Yükleyin (CSV formatında)", type=["csv"])
 
-for gun in range(etkinlik_gun_sayisi):
-    st.subheader(f"{gun+1}. Gün Etkinlikleri")
+    if uploaded_file is not None:
+        df = pd.read_csv(uploaded_file)
+        st.success("✅ Dosya Başarıyla Yüklendi!")
 
-    # Sayacı başlat
-    if gun not in st.session_state.etkinlik_sayaci:
-        st.session_state.etkinlik_sayaci[gun] = 1
+        max_gun = df['Gün'].max()
 
-    # Butonla artır
-    if st.button(f"{gun+1}. Gün İçin Etkinlik Ekle", key=f"etkinlik_ekle_btn_{gun}"):
-        st.session_state.etkinlik_sayaci[gun] += 1
+        for gun in range(1, max_gun+1):
+            gunluk_oda = df[df['Gün'] == gun].iloc[0]
+            oda_bilgileri.append({
+                "tek": gunluk_oda['Tek Kişilik Oda Sayısı'],
+                "cift": gunluk_oda['Çift Kişilik Oda Sayısı'],
+                "tek_f": gunluk_oda['Tek Kişilik Fiyat'],
+                "cift_f": gunluk_oda['Çift Kişilik Fiyat'],
+            })
 
-    g_etkinlikler = []
-    for j in range(st.session_state.etkinlik_sayaci[gun]):
-        tur = st.selectbox(f"Etkinlik Türü {j+1} (Gün {gun+1})", options=etkinlik_turleri, key=f"tur_{gun}_{j}")
+            gunluk_etkinlikler = []
+            gun_df = df[df['Gün'] == gun]
+            for idx, row in gun_df.iterrows():
+                gunluk_etkinlikler.append({
+                    "tur": row['Etkinlik Türü'],
+                    "kisi": row['Katılımcı Sayısı'],
+                    "fiyat": row['Etkinlik Fiyatı']
+                })
+            etkinlikler.append(gunluk_etkinlikler)
 
-        if etkinlik_farkli_mi and etkinlik_fiyat_degisim == "Evet":
-            fiyat = st.number_input(f"{tur} Fiyatı (Gün {gun+1})", min_value=0.0, key=f"fiyat_{gun}_{j}")
+# Eğer Manuel Giriş Seçilirse
+else:
+    # Süre Bilgileri
+    st.header("🗓 Süre Bilgileri")
+    etkinlik_gun_sayisi = st.number_input("Etkinlik Süresi (Gün)", min_value=1, value=1)
+    konaklama_gun_sayisi = st.number_input("Konaklama Süresi (Gece)", min_value=1, value=1)
+
+    st.markdown("---")
+
+    # Farklılık seçenekleri
+    st.header("⚙ Bilgi Giriş Ayarları")
+    etkinlik_farkli_mi = st.checkbox("Her gün için farklı etkinlik bilgisi girilsin mi?", value=True)
+    oda_farkli_mi = st.checkbox("Her gün için farklı oda bilgisi girilsin mi?", value=True)
+
+    etkinlik_fiyat_degisim = st.radio("Her gün etkinlik fiyatı değişiyor mu?", ["Hayır", "Evet"]) if etkinlik_farkli_mi else "Hayır"
+    oda_fiyat_degisim = st.radio("Her gün oda fiyatı değişiyor mu?", ["Hayır", "Evet"]) if oda_farkli_mi else "Hayır"
+
+    st.markdown("---")
+
+    # Başlangıç Fiyatları
+    st.header("💶 Başlangıç Oda ve Etkinlik Fiyatları")
+    tek_kisilik_standart_fiyat = st.number_input("Tek Kişilik Oda Standart Fiyatı (gecelik)", min_value=0.0, value=0.0)
+    cift_kisilik_standart_fiyat = st.number_input("Çift Kişilik Oda Standart Fiyatı (gecelik)", min_value=0.0, value=0.0)
+
+    etkinlik_turleri = ["Toplantı", "Gala", "Kokteyl", "Öğle Yemeği", "Akşam Yemeği", "Breakout", "Kurulum"]
+    standart_etkinlik_fiyatlari = {}
+    for tur in etkinlik_turleri:
+        fiyat = st.number_input(f"{tur} Standart Fiyatı (Kişi Başı)", min_value=0.0, value=0.0, key=f"standart_{tur}")
+        standart_etkinlik_fiyatlari[tur] = fiyat
+
+    st.markdown("---")
+
+    # Oda Bilgileri
+    st.header("🛏 Konaklama Bilgileri")
+    for gun in range(konaklama_gun_sayisi):
+        st.subheader(f"{gun+1}. Gece Oda Bilgisi")
+        tek = st.number_input(f"Tek Kişilik Oda Sayısı (Gece {gun+1})", min_value=0, key=f"tek{gun}")
+        cift = st.number_input(f"Çift Kişilik Oda Sayısı (Gece {gun+1})", min_value=0, key=f"cift{gun}")
+
+        if oda_farkli_mi and oda_fiyat_degisim == "Evet":
+            tek_f = st.number_input(f"Tek Kişilik Oda Fiyatı (Gece {gun+1})", min_value=0.0, key=f"tekf{gun}")
+            cift_f = st.number_input(f"Çift Kişilik Oda Fiyatı (Gece {gun+1})", min_value=0.0, key=f"ciftf{gun}")
         else:
-            fiyat = standart_etkinlik_fiyatlari.get(tur, 0)
+            tek_f = tek_kisilik_standart_fiyat
+            cift_f = cift_kisilik_standart_fiyat
 
-        kisi = st.number_input(f"{tur} Katılımcı Sayısı (Gün {gun+1})", min_value=0, key=f"kisi_{gun}_{j}")
-        g_etkinlikler.append({"tur": tur, "fiyat": fiyat, "kisi": kisi})
+        oda_bilgileri.append({"tek": tek, "cift": cift, "tek_f": tek_f, "cift_f": cift_f})
 
-    etkinlikler.append(g_etkinlikler)
+    st.markdown("---")
 
+    # Etkinlik Bilgileri
+    st.header("🎤 Etkinlik Bilgileri")
+    if "etkinlik_sayaci" not in st.session_state:
+        st.session_state.etkinlik_sayaci = {}
+
+    for gun in range(etkinlik_gun_sayisi):
+        st.subheader(f"{gun+1}. Gün Etkinlikleri")
+
+        if gun not in st.session_state.etkinlik_sayaci:
+            st.session_state.etkinlik_sayaci[gun] = 1
+
+        if st.button(f"{gun+1}. Gün İçin Etkinlik Ekle", key=f"etkinlik_ekle_btn_{gun}"):
+            st.session_state.etkinlik_sayaci[gun] += 1
+
+        g_etkinlikler = []
+        for j in range(st.session_state.etkinlik_sayaci[gun]):
+            tur = st.selectbox(f"Etkinlik Türü {j+1} (Gün {gun+1})", options=etkinlik_turleri, key=f"tur_{gun}_{j}")
+
+            if etkinlik_farkli_mi and etkinlik_fiyat_degisim == "Evet":
+                fiyat = st.number_input(f"{tur} Fiyatı (Gün {gun+1})", min_value=0.0, key=f"fiyat_{gun}_{j}")
+            else:
+                fiyat = standart_etkinlik_fiyatlari.get(tur, 0)
+
+            kisi = st.number_input(f"{tur} Katılımcı Sayısı (Gün {gun+1})", min_value=0, key=f"kisi_{gun}_{j}")
+            g_etkinlikler.append({"tur": tur, "fiyat": fiyat, "kisi": kisi})
+
+        etkinlikler.append(g_etkinlikler)
 
 st.markdown("---")
 
@@ -139,13 +177,13 @@ st.success("✅ Hesaplama Tamamlandı!")
 
 st.header("📋 Sözleşme Özeti")
 st.info(f"Şirket/Acenta: {misafir_adi}")
-st.write(f"Konaklama Bedeli (KDV Hariç): {vergisiz_konaklama:,.2f} EUR")
-st.write(f"Etkinlik Bedeli (KDV Hariç): {vergisiz_etkinlik:,.2f} EUR")
-st.write(f"Toplam KDV: {(vergi_konaklama + vergi_etkinlik):,.2f} EUR")
-st.write(f"Damga Vergisi: {damga_vergisi:,.2f} EUR")
-st.write(f"Genel Toplam: {toplam_tutar:,.2f} EUR")
-st.subheader(f"🔵 İlk Ödeme (30%): {ilk_odeme:,.2f} EUR")
-st.subheader(f"🔵 Kalan Ödeme (70%): {son_odeme:,.2f} EUR")
+st.write(f"Konaklama Bedeli (KDV Hariç): {vergisiz_konaklama:,.2f} {sembol}")
+st.write(f"Etkinlik Bedeli (KDV Hariç): {vergisiz_etkinlik:,.2f} {sembol}")
+st.write(f"Toplam KDV: {(vergi_konaklama + vergi_etkinlik):,.2f} {sembol}")
+st.write(f"Damga Vergisi: {damga_vergisi:,.2f} {sembol}")
+st.write(f"Genel Toplam: {toplam_tutar:,.2f} {sembol}")
+st.subheader(f"🔵 İlk Ödeme (30%): {ilk_odeme:,.2f} {sembol}")
+st.subheader(f"🔵 Kalan Ödeme (70%): {son_odeme:,.2f} {sembol}")
 
 st.markdown("---")
 
@@ -163,8 +201,6 @@ data = {
 }
 
 df = pd.DataFrame(data)
-
-import io
 
 @st.cache_data
 def convert_df_to_excel(df):
