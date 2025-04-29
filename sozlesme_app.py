@@ -78,7 +78,7 @@ etkinlikler = []
 if "etkinlik_sayaci" not in st.session_state:
     st.session_state.etkinlik_sayaci = {}
 
-for gun in range(gun_sayisi):
+for gun in range(etkinlik_gun_sayisi):
     st.subheader(f"{gun+1}. Gün Etkinlikleri")
 
     # Sayacı başlat
