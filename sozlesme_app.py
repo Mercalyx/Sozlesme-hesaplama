@@ -1,13 +1,12 @@
 import streamlit as st
 import pandas as pd
-import io
 
 st.set_page_config(page_title="Sözleşme Hesaplama Robotu", page_icon="🧾")
 
 st.title("🧾 Sözleşme Tutarı Hesaplama Robotu")
 st.markdown("---")
 
-# Şirket Bilgileri
+# Şirket/Acenta bilgileri
 st.header("👤 Şirket / Acenta Bilgileri")
 misafir_adi = st.text_input("Şirket veya Acenta Adı", "")
 Tursab = st.radio("TURSAB Üyesi mi?", ["Evet", "Hayır"])
@@ -21,11 +20,26 @@ konaklama_gun_sayisi = st.number_input("Konaklama Süresi (Gece)", min_value=1, 
 
 st.markdown("---")
 
-# Para Birimi Seçimi
-st.header("💱 Para Birimi Seçimi")
-para_birimleri = {"EUR": "€", "USD": "$", "TL": "₺"}
-secili_para_birimi = st.selectbox("Para Birimi Seçin", list(para_birimleri.keys()))
-sembol = para_birimleri[secili_para_birimi]
+# Farklılık seçenekleri
+st.header("⚙ Bilgi Giriş Ayarları")
+etkinlik_farkli_mi = st.checkbox("Her gün için farklı etkinlik bilgisi girilsin mi?", value=True)
+oda_farkli_mi = st.checkbox("Her gün için farklı oda bilgisi girilsin mi?", value=True)
+
+etkinlik_fiyat_degisim = st.radio("Her gün etkinlik fiyatı değişiyor mu?", ["Hayır", "Evet"]) if etkinlik_farkli_mi else "Hayır"
+oda_fiyat_degisim = st.radio("Her gün oda fiyatı değişiyor mu?", ["Hayır", "Evet"]) if oda_farkli_mi else "Hayır"
+
+st.markdown("---")
+
+# Başlangıç Fiyatları
+st.header("💶 Başlangıç Oda ve Etkinlik Fiyatları")
+tek_kisilik_standart_fiyat = st.number_input("Tek Kişilik Oda Standart Fiyatı (gecelik)", min_value=0.0, value=0.0)
+cift_kisilik_standart_fiyat = st.number_input("Çift Kişilik Oda Standart Fiyatı (gecelik)", min_value=0.0, value=0.0)
+
+etkinlik_turleri = ["Toplantı", "Gala", "Kokteyl", "Öğle Yemeği", "Akşam Yemeği", "Breakout", "Kurulum"]
+standart_etkinlik_fiyatlari = {}
+for tur in etkinlik_turleri:
+    fiyat = st.number_input(f"{tur} Standart Fiyatı (Kişi Başı)", min_value=0.0, value=0.0, key=f"standart_{tur}")
+    standart_etkinlik_fiyatlari[tur] = fiyat
 
 st.markdown("---")
 
@@ -36,34 +50,37 @@ for gun in range(konaklama_gun_sayisi):
     st.subheader(f"{gun+1}. Gece Oda Bilgisi")
     tek = st.number_input(f"Tek Kişilik Oda Sayısı (Gece {gun+1})", min_value=0, key=f"tek{gun}")
     cift = st.number_input(f"Çift Kişilik Oda Sayısı (Gece {gun+1})", min_value=0, key=f"cift{gun}")
-    tek_f = st.number_input(f"Tek Kişilik Oda Fiyatı (Gece {gun+1})", min_value=0.0, key=f"tekf{gun}")
-    cift_f = st.number_input(f"Çift Kişilik Oda Fiyatı (Gece {gun+1})", min_value=0.0, key=f"ciftf{gun}")
+
+    if oda_farkli_mi and oda_fiyat_degisim == "Evet":
+        tek_f = st.number_input(f"Tek Kişilik Oda Fiyatı (Gece {gun+1})", min_value=0.0, key=f"tekf{gun}")
+        cift_f = st.number_input(f"Çift Kişilik Oda Fiyatı (Gece {gun+1})", min_value=0.0, key=f"ciftf{gun}")
+    else:
+        tek_f = tek_kisilik_standart_fiyat
+        cift_f = cift_kisilik_standart_fiyat
 
     oda_bilgileri.append({"tek": tek, "cift": cift, "tek_f": tek_f, "cift_f": cift_f})
 
 st.markdown("---")
 
-# Etkinlik Bilgileri - Dinamik Ekleme
+# Etkinlik Bilgileri
 st.header("🎤 Etkinlik Bilgileri")
-
-if "etkinlikler" not in st.session_state:
-    st.session_state.etkinlikler = {gun: [] for gun in range(etkinlik_gun_sayisi)}
-
-etkinlik_turleri = ["Toplantı", "Gala", "Kokteyl", "Öğle Yemeği", "Akşam Yemeği", "Breakout", "Kurulum"]
+etkinlikler = []
 
 for gun in range(etkinlik_gun_sayisi):
     st.subheader(f"{gun+1}. Gün Etkinlikleri")
+    g_etkinlikler = []
+    g_sayisi = st.number_input(f"{gun+1}. gün kaç farklı etkinlik olacak?", min_value=1, value=1, step=1, key=f"eg{gun}")
+    for j in range(g_sayisi):
+        tur = st.selectbox(f"Etkinlik Türü {j+1} (Gün {gun+1})", options=etkinlik_turleri, key=f"t{gun}{j}")
 
-    for idx, etkinlik in enumerate(st.session_state.etkinlikler[gun]):
-        st.write(f"Etkinlik {idx+1}: {etkinlik['tur']} - {etkinlik['fiyat']} {sembol} - {etkinlik['kisi']} kişi")
+        if etkinlik_farkli_mi and etkinlik_fiyat_degisim == "Evet":
+            fiyat = st.number_input(f"{tur} Fiyatı (Gün {gun+1})", min_value=0.0, key=f"f{gun}{j}")
+        else:
+            fiyat = standart_etkinlik_fiyatlari[tur]
 
-    if st.button(f"➕ {gun+1}. Gün Etkinlik Ekle", key=f"ekle{gun}"):
-        yeni_etkinlik = {}
-        yeni_etkinlik["tur"] = st.selectbox(f"Etkinlik Türü (Gün {gun+1})", etkinlik_turleri, key=f"t{gun}")
-        yeni_etkinlik["fiyat"] = st.number_input(f"Etkinlik Fiyatı (Kişi Başı) (Gün {gun+1})", min_value=0.0, key=f"f{gun}")
-        yeni_etkinlik["kisi"] = st.number_input(f"Katılımcı Sayısı (Gün {gun+1})", min_value=0, key=f"k{gun}")
-
-        st.session_state.etkinlikler[gun].append(yeni_etkinlik)
+        kisi = st.number_input(f"{tur} Katılımcı Sayısı (Gün {gun+1})", min_value=0, key=f"k{gun}{j}")
+        g_etkinlikler.append({"tur": tur, "fiyat": fiyat, "kisi": kisi})
+    etkinlikler.append(g_etkinlikler)
 
 st.markdown("---")
 
@@ -77,8 +94,8 @@ vergi_konaklama = vergisiz_konaklama * 0.12
 vergisiz_etkinlik = 0
 vergi_etkinlik = 0
 vergili_etkinlik = 0
-for gun_etkinlikler in st.session_state.etkinlikler.values():
-    for etkinlik in gun_etkinlikler:
+for gun in etkinlikler:
+    for etkinlik in gun:
         e_tutar = etkinlik["fiyat"] * etkinlik["kisi"]
         vergi = e_tutar * 0.20
         vergisiz_etkinlik += e_tutar
@@ -100,19 +117,13 @@ st.success("✅ Hesaplama Tamamlandı!")
 
 st.header("📋 Sözleşme Özeti")
 st.info(f"Şirket/Acenta: {misafir_adi}")
-
-st.write(f"Konaklama Bedeli (KDV Hariç): {vergisiz_konaklama:,.2f} {sembol}")
-st.write(f"Konaklama Bedeli (KDV Dahil): {vergili_konaklama:,.2f} {sembol}")
-
-st.write(f"Etkinlik Bedeli (KDV Hariç): {vergisiz_etkinlik:,.2f} {sembol}")
-st.write(f"Etkinlik Bedeli (KDV Dahil): {vergili_etkinlik:,.2f} {sembol}")
-
-st.write(f"Toplam KDV: {(vergi_konaklama + vergi_etkinlik):,.2f} {sembol}")
-st.write(f"Damga Vergisi: {damga_vergisi:,.2f} {sembol}")
-st.write(f"Genel Toplam: {toplam_tutar:,.2f} {sembol}")
-
-st.subheader(f"🔵 İlk Ödeme (30%): {ilk_odeme:,.2f} {sembol}")
-st.subheader(f"🔵 Kalan Ödeme (70%): {son_odeme:,.2f} {sembol}")
+st.write(f"Konaklama Bedeli (KDV Hariç): {vergisiz_konaklama:,.2f} EUR")
+st.write(f"Etkinlik Bedeli (KDV Hariç): {vergisiz_etkinlik:,.2f} EUR")
+st.write(f"Toplam KDV: {(vergi_konaklama + vergi_etkinlik):,.2f} EUR")
+st.write(f"Damga Vergisi: {damga_vergisi:,.2f} EUR")
+st.write(f"Genel Toplam: {toplam_tutar:,.2f} EUR")
+st.subheader(f"🔵 İlk Ödeme (30%): {ilk_odeme:,.2f} EUR")
+st.subheader(f"🔵 Kalan Ödeme (70%): {son_odeme:,.2f} EUR")
 
 st.markdown("---")
 
@@ -121,9 +132,7 @@ st.header("📄 Teklif Excel Çıktısı")
 data = {
     "Şirket/Acenta": [misafir_adi],
     "Konaklama (KDV Hariç)": [vergisiz_konaklama],
-    "Konaklama (KDV Dahil)": [vergili_konaklama],
     "Etkinlik (KDV Hariç)": [vergisiz_etkinlik],
-    "Etkinlik (KDV Dahil)": [vergili_etkinlik],
     "Toplam KDV": [vergi_konaklama + vergi_etkinlik],
     "Damga Vergisi": [damga_vergisi],
     "Genel Toplam": [toplam_tutar],
@@ -132,6 +141,8 @@ data = {
 }
 
 df = pd.DataFrame(data)
+
+import io
 
 @st.cache_data
 def convert_df_to_excel(df):
