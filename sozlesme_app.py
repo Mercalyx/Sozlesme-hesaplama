@@ -74,29 +74,35 @@ st.markdown("---")
 st.header("🎤 Etkinlik Bilgileri")
 etkinlikler = []
 
+# Gerekli başlangıçlar
+if "etkinlik_sayaci" not in st.session_state:
+    st.session_state.etkinlik_sayaci = {}
+
 for gun in range(gun_sayisi):
     st.subheader(f"{gun+1}. Gün Etkinlikleri")
 
     # Sayacı başlat
-    if f"etkinlik_sayaci_{gun}" not in st.session_state:
-        st.session_state[f"etkinlik_sayaci_{gun}"] = 1
+    if gun not in st.session_state.etkinlik_sayaci:
+        st.session_state.etkinlik_sayaci[gun] = 1
 
-    if st.button(f"{gun+1}. Gün İçin Etkinlik Ekle", key=f"etkinlik_ekle_{gun}"):
-        st.session_state[f"etkinlik_sayaci_{gun}"] += 1
+    # Butonla artır
+    if st.button(f"{gun+1}. Gün İçin Etkinlik Ekle", key=f"etkinlik_ekle_btn_{gun}"):
+        st.session_state.etkinlik_sayaci[gun] += 1
 
     g_etkinlikler = []
-    for j in range(st.session_state[f"etkinlik_sayaci_{gun}"]):
-        tur = st.selectbox(f"Etkinlik Türü {j+1} (Gün {gun+1})", options=etkinlik_turleri, key=f"t{gun}_{j}")
+    for j in range(st.session_state.etkinlik_sayaci[gun]):
+        tur = st.selectbox(f"Etkinlik Türü {j+1} (Gün {gun+1})", options=etkinlik_turleri, key=f"tur_{gun}_{j}")
 
         if etkinlik_farkli_mi and etkinlik_fiyat_degisim == "Evet":
-            fiyat = st.number_input(f"{tur} Fiyatı (Gün {gun+1})", min_value=0.0, key=f"f{gun}_{j}")
+            fiyat = st.number_input(f"{tur} Fiyatı (Gün {gun+1})", min_value=0.0, key=f"fiyat_{gun}_{j}")
         else:
-            fiyat = standart_etkinlik_fiyatlari[tur]
+            fiyat = standart_etkinlik_fiyatlari.get(tur, 0)
 
-        kisi = st.number_input(f"{tur} Katılımcı Sayısı (Gün {gun+1})", min_value=0, key=f"k{gun}_{j}")
+        kisi = st.number_input(f"{tur} Katılımcı Sayısı (Gün {gun+1})", min_value=0, key=f"kisi_{gun}_{j}")
         g_etkinlikler.append({"tur": tur, "fiyat": fiyat, "kisi": kisi})
 
     etkinlikler.append(g_etkinlikler)
+
 
 st.markdown("---")
 
