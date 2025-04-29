@@ -9,7 +9,7 @@ st.markdown("---")
 # Şirket/Acenta bilgileri
 st.header("👤 Şirket / Acenta Bilgileri")
 misafir_adi = st.text_input("Şirket veya Acenta Adı", "")
-Tursab = st.radio("TÜRSAB Üyesi mi?", ["Evet", "Hayır"])
+Tursab = st.radio("TURSAB Üyesi mi?", ["Evet", "Hayır"])
 
 st.markdown("---")
 
@@ -35,7 +35,7 @@ st.header("💶 Başlangıç Oda ve Etkinlik Fiyatları")
 tek_kisilik_standart_fiyat = st.number_input("Tek Kişilik Oda Standart Fiyatı (gecelik)", min_value=0.0, value=0.0)
 cift_kisilik_standart_fiyat = st.number_input("Çift Kişilik Oda Standart Fiyatı (gecelik)", min_value=0.0, value=0.0)
 
-etkinlik_turleri = ["Toplantı", "Gala", "Kokteyl", "Workshop"]
+etkinlik_turleri = ["Toplantı", "Gala", "Kokteyl", "Öğle Yemeği", "Akşam Yemeği", "Breakout", "Kurulum"]
 standart_etkinlik_fiyatlari = {}
 for tur in etkinlik_turleri:
     fiyat = st.number_input(f"{tur} Standart Fiyatı (Kişi Başı)", min_value=0.0, value=0.0, key=f"standart_{tur}")
