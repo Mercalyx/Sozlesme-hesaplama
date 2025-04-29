@@ -69,7 +69,7 @@ etkinlikler = []
 for gun in range(etkinlik_gun_sayisi):
     st.subheader(f"{gun+1}. Gün Etkinlikleri")
     g_etkinlikler = []
-    g_sayisi = st.number_input(f"{gun+1}. gün kaç farklı etkinlik olacak?", min_value=1, value=1, step=1, key=f"eg{gun}")
+    g_sayisi = st.number_input(f"{gun+1}.Seçmiş olduğunuz gün kaç farklı etkinlik olacak?", min_value=1, value=1, step=1, key=f"eg{gun}")
     for j in range(g_sayisi):
         tur = st.selectbox(f"Etkinlik Türü {j+1} (Gün {gun+1})", options=etkinlik_turleri, key=f"t{gun}{j}")
 
