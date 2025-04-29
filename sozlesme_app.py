@@ -13,6 +13,14 @@ Tursab = st.radio("TURSAB Üyesi mi?", ["Evet", "Hayır"])
 
 st.markdown("---")
 
+# Para Birimi Seçimi
+st.header("💱 Para Birimi Seçimi")
+para_birimleri = {"EUR": "€", "USD": "$", "TL": "₺"}
+secili_para_birimi = st.selectbox("Para Birimi Seçin", list(para_birimleri.keys()))
+sembol = para_birimleri[secili_para_birimi]
+
+st.markdown("---")
+
 # Süre Bilgileri
 st.header("🗓 Süre Bilgileri")
 etkinlik_gun_sayisi = st.number_input("Etkinlik Süresi (Gün)", min_value=1, value=1)
@@ -66,20 +74,27 @@ st.markdown("---")
 st.header("🎤 Etkinlik Bilgileri")
 etkinlikler = []
 
-for gun in range(etkinlik_gun_sayisi):
+for gun in range(gun_sayisi):
     st.subheader(f"{gun+1}. Gün Etkinlikleri")
     g_etkinlikler = []
-    g_sayisi = st.number_input(f"{gun+1}. gün kaç farklı etkinlik olacak?", min_value=1, value=1, step=1, key=f"eg{gun}")
-    for j in range(g_sayisi):
-        tur = st.selectbox(f"Etkinlik Türü {j+1} (Gün {gun+1})", options=etkinlik_turleri, key=f"t{gun}{j}")
+
+    etkinlik_sayaci = st.session_state.get(f"etkinlik_sayaci_{gun}", 1)
+
+    if st.button(f"{gun+1}. Gün İçin Etkinlik Ekle", key=f"etkinlik_ekle_{gun}"):
+        st.session_state[f"etkinlik_sayaci_{gun}"] = etkinlik_sayaci + 1
+        etkinlik_sayaci += 1
+
+    for j in range(etkinlik_sayaci):
+        tur = st.selectbox(f"Etkinlik Türü {j+1} (Gün {gun+1})", options=etkinlik_turleri, key=f"t{gun}_{j}")
 
         if etkinlik_farkli_mi and etkinlik_fiyat_degisim == "Evet":
-            fiyat = st.number_input(f"{tur} Fiyatı (Gün {gun+1})", min_value=0.0, key=f"f{gun}{j}")
+            fiyat = st.number_input(f"{tur} Fiyatı (Gün {gun+1})", min_value=0.0, key=f"f{gun}_{j}")
         else:
             fiyat = standart_etkinlik_fiyatlari[tur]
 
-        kisi = st.number_input(f"{tur} Katılımcı Sayısı (Gün {gun+1})", min_value=0, key=f"k{gun}{j}")
+        kisi = st.number_input(f"{tur} Katılımcı Sayısı (Gün {gun+1})", min_value=0, key=f"k{gun}_{j}")
         g_etkinlikler.append({"tur": tur, "fiyat": fiyat, "kisi": kisi})
+
     etkinlikler.append(g_etkinlikler)
 
 st.markdown("---")
