@@ -142,11 +142,17 @@ data = {
 
 df = pd.DataFrame(data)
 
-@st.cache_data
-def convert_df(df):
-    return df.to_excel(index=False, engine='openpyxl')
+import io
 
-excel_data = convert_df(df)
+@st.cache_data
+def convert_df_to_excel(df):
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Sözleşme Özeti')
+    processed_data = output.getvalue()
+    return processed_data
+
+excel_data = convert_df_to_excel(df)
 
 st.download_button(
     label="📥 Excel Olarak İndir",
