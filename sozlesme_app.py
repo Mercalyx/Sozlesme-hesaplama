@@ -16,7 +16,7 @@ gun_sayisi = st.number_input("Etkinlik Günü Sayısı", min_value=0, value=0)
 Vergisiz_Konaklama_bedeli = oda_sayisi * gece_sayisi * gecelik_fiyat
 Vergisiz_Etkinlik_bedeli = DDR * Katilimci_sayisi * gun_sayisi
 Vergisiz_ara_toplam = Vergisiz_Konaklama_bedeli + Vergisiz_Etkinlik_bedeli
-vergi = (vergisiz_konaklama_bedeli * 0.12) + (vergisiz_etkinlik_bedeli * 0.20)
+Vergi = (Vergisiz_Konaklama_bedeli * 0.12) + (Vergisiz_Etkinlik_bedeli * 0.20)
 Vergili_Konaklama_bedeli = oda_sayisi * gece_sayisi * gecelik_fiyat * 1.12
 Vergili_Etkinlik_bedeli = DDR * Katilimci_sayisi * gun_sayisi * 1.20
 Vergili_ara_toplam = Vergili_Konaklama_bedeli + Vergili_Etkinlik_bedeli
@@ -30,7 +30,7 @@ if Tursab == "Evet":
 if Tursab == "Hayır":
     damga_vergisi = (Vergisiz_Konaklama_bedeli + Vergisiz_Etkinlik_bedeli) * 0.00948 / 2
 
-toplam = ara_toplam + vergi + damga_vergisi
+toplam = Ara_toplam + Vergi + damga_vergisi
 ilk_odeme = toplam * 0.30
 son_odeme = toplam * 0.70
 
@@ -44,10 +44,10 @@ st.write(f"**Konaklama Bedeli KDV Hariç:** {Vergisiz_Konaklama_bedeli:,.2f} EUR
 st.write(f"**Etkinlik Bedeli KDV Hariç:** {Vergisiz_Etkinlik_bedeli:,.2f} EUR")
 st.write(f"**Konaklama Bedeli KDV Dahil:** {Vergili_Konaklama_bedeli:,.2f} EUR")
 st.write(f"**Etkinlik Bedeli KDV Dahil:** {Vergili_Etkinlik_bedeli:,.2f} EUR")
-st.write(f"**Vergi (%{vergi_orani * 100:.0f}):** {vergi:,.2f} EUR")
+st.write(f"**Toplam Vergi Bedeli:** {Vergili_Etkinlik_bedeli:,.2f} EUR")
 st.write(f"**Vergi (Konaklama %12 + Etkinlik %20):** {vergi:,.2f} EUR")
 st.write(f"**Damga Vergisi:** {damga_vergisi:,.2f} EUR")
-st.write(f"**Ara Toplam:** {ara_toplam:,.2f} EUR")
+st.write(f"**Ara Toplam:** {Ara_toplam:,.2f} EUR")
 st.write(f"**Komisyon Tutarı:** {Komisyon_tutari:,.2f} EUR")
 st.write(f"### ✅ İlk Ödeme: {ilk_odeme:,.2f} EUR")
 st.write(f"### ✅ Son Ödeme: {son_odeme:,.2f} EUR")
