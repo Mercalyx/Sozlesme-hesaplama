@@ -76,15 +76,16 @@ etkinlikler = []
 
 for gun in range(gun_sayisi):
     st.subheader(f"{gun+1}. Gün Etkinlikleri")
-    g_etkinlikler = []
 
-    etkinlik_sayaci = st.session_state.get(f"etkinlik_sayaci_{gun}", 1)
+    # Sayacı başlat
+    if f"etkinlik_sayaci_{gun}" not in st.session_state:
+        st.session_state[f"etkinlik_sayaci_{gun}"] = 1
 
     if st.button(f"{gun+1}. Gün İçin Etkinlik Ekle", key=f"etkinlik_ekle_{gun}"):
-        st.session_state[f"etkinlik_sayaci_{gun}"] = etkinlik_sayaci + 1
-        etkinlik_sayaci += 1
+        st.session_state[f"etkinlik_sayaci_{gun}"] += 1
 
-    for j in range(etkinlik_sayaci):
+    g_etkinlikler = []
+    for j in range(st.session_state[f"etkinlik_sayaci_{gun}"]):
         tur = st.selectbox(f"Etkinlik Türü {j+1} (Gün {gun+1})", options=etkinlik_turleri, key=f"t{gun}_{j}")
 
         if etkinlik_farkli_mi and etkinlik_fiyat_degisim == "Evet":
