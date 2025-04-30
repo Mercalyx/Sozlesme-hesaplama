@@ -35,28 +35,47 @@ oda_bilgileri = []
 etkinlikler = []
 
 # Eğer Tablo ile Yüklenirse
-if giris_yontemi == "Tabloyla Giriş":
-    st.header("📅 Etkinlik Bilgileri (Tablolu Giriş)")
+elif giris_yontemi == "Tabloyla Giriş":
+    st.header("📅 Etkinlik Tablosu")
+    etkinlik_df = pd.DataFrame({
+        "Tarih": [""],
+        "Etkinlik Türü": [""],
+        "Katılımcı Sayısı": [0],
+        "Kişi Başı Fiyat": [0.0]
+    })
+    etkinlik_input = st.data_editor(etkinlik_df, num_rows="dynamic", use_container_width=True)
 
-    if "etkinlik_tablosu" not in st.session_state:
-        st.session_state.etkinlik_tablosu = []
+    st.markdown("### 🛏 Konaklama Tablosu")
+    konaklama_df = pd.DataFrame({
+        "Tarih": [""],
+        "Oda Türü": [""],
+        "Oda Sayısı": [0],
+        "Gecelik Fiyat": [0.0]
+    })
+    konaklama_input = st.data_editor(konaklama_df, num_rows="dynamic", use_container_width=True)
 
-    if st.button("➕ Etkinlik Satırı Ekle"):
-        st.session_state.etkinlik_tablosu.append({})
+    # DataFrame → Liste dönüşümü
+    etkinlikler = []
+    for _, row in etkinlik_input.iterrows():
+        etkinlikler.append([{
+            "tur": row["Etkinlik Türü"],
+            "kisi": int(row["Katılımcı Sayısı"]),
+            "fiyat": float(row["Kişi Başı Fiyat"])
+        }])
 
-    for idx, row in enumerate(st.session_state.etkinlik_tablosu):
-        st.markdown(f"*Etkinlik Satırı {idx+1}*")
-        tarih = st.date_input(f"Tarih {idx+1}", key=f"etkinlik_tarih_{idx}")
-        etkinlik_turu = st.text_input(f"Etkinlik Türü {idx+1}", key=f"etkinlik_tur_{idx}")
-        kisi = st.number_input(f"Katılımcı Sayısı {idx+1}", min_value=0, key=f"etkinlik_kisi_{idx}")
-        fiyat = st.number_input(f"Kişi Başı Fiyat {idx+1}", min_value=0.0, key=f"etkinlik_fiyat_{idx}")
+    oda_bilgileri = []
+    for _, row in konaklama_input.iterrows():
+        tek = int(row["Oda Sayısı"]) if row["Oda Türü"] == "Tek" else 0
+        cift = int(row["Oda Sayısı"]) if row["Oda Türü"] == "Çift" else 0
+        tek_f = float(row["Gecelik Fiyat"]) if row["Oda Türü"] == "Tek" else 0.0
+        cift_f = float(row["Gecelik Fiyat"]) if row["Oda Türü"] == "Çift" else 0.0
 
-        etkinlik = {"tur": etkinlik_turu, "kisi": kisi, "fiyat": fiyat}
-        if len(etkinlikler) <= idx:
-            etkinlikler.append([etkinlik])
-        else:
-            etkinlikler[idx] = [etkinlik]
-
+        oda_bilgileri.append({
+            "tek": tek,
+            "cift": cift,
+            "tek_f": tek_f,
+            "cift_f": cift_f
+        })
 
 # Eğer Dosya Yüklenirse
 if giris_yontemi == "Dosya Yükleyerek":
