@@ -69,13 +69,12 @@ if giris_yontemi == "Tabloyla Giriş":
         cift = int(row["Oda Sayısı"]) if row["Oda Türü"] == "Çift" else 0
         tek_f = float(row["Gecelik Fiyat"]) if row["Oda Türü"] == "Tek" else 0.0
         cift_f = float(row["Gecelik Fiyat"]) if row["Oda Türü"] == "Çift" else 0.0
-      oda_bilgileri.append({
-            "tek": tek,
-            "cift": cift,
-            "tek_f": tek_f,
-            "cift_f": cift_f
-        })
-
+    oda_bilgileri.append({
+        "tek": tek,
+        "cift": cift,
+        "tek_f": tek_f,
+        "cift_f": cift_f
+    })
 
 
 # Eğer Dosya Yüklenirse
