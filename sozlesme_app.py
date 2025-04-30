@@ -26,7 +26,7 @@ st.markdown("---")
 st.header("📋 Veri Giriş Yöntemi Seçimi")
 giris_yontemi = st.radio(
     "Verileri nasıl gireceksiniz?",
-    ("Dosya Yükleyerek", "Manuel Giriş", "Tabloyla Giriş")
+    ("Dosya Yükleyerek", "Tabloyla Giriş",  "Manuel Giriş")
 )
 
 st.markdown("---")
@@ -34,7 +34,37 @@ st.markdown("---")
 oda_bilgileri = []
 etkinlikler = []
 
-if giris_yontemi == "Tabloyla Giriş":
+# Eğer Dosya Yüklenirse
+if giris_yontemi == "Dosya Yükleyerek":
+    st.header("📂 Booking Verisi Yükle")
+    uploaded_file = st.file_uploader("Booking Verisini Yükleyin (CSV formatında)", type=["csv"])
+
+    if uploaded_file is not None:
+        df = pd.read_csv(uploaded_file)
+        st.success("✅ Dosya Başarıyla Yüklendi!")
+
+        max_gun = df['Gün'].max()
+
+        for gun in range(1, max_gun+1):
+            gunluk_oda = df[df['Gün'] == gun].iloc[0]
+            oda_bilgileri.append({
+                "tek": gunluk_oda['Tek Kişilik Oda Sayısı'],
+                "cift": gunluk_oda['Çift Kişilik Oda Sayısı'],
+                "tek_f": gunluk_oda['Tek Kişilik Fiyat'],
+                "cift_f": gunluk_oda['Çift Kişilik Fiyat'],
+            })
+
+            gunluk_etkinlikler = []
+            gun_df = df[df['Gün'] == gun]
+            for idx, row in gun_df.iterrows():
+                gunluk_etkinlikler.append({
+                    "tur": row['Etkinlik Türü'],
+                    "kisi": row['Katılımcı Sayısı'],
+                    "fiyat": row['Etkinlik Fiyatı']
+                })
+            etkinlikler.append(gunluk_etkinlikler)
+
+elif giris_yontemi == "Tabloyla Giriş":
     st.header("📅 Etkinlik Tablosu")
     etkinlik_df = pd.DataFrame({
         "Tarih": [""],
@@ -86,37 +116,7 @@ if giris_yontemi == "Tabloyla Giriş":
             "cift": cift,
             "tek_f": tek_f,
             "cift_f": cift_f
-        })
-
-# Eğer Dosya Yüklenirse
-elif giris_yontemi == "Dosya Yükleyerek":
-    st.header("📂 Booking Verisi Yükle")
-    uploaded_file = st.file_uploader("Booking Verisini Yükleyin (CSV formatında)", type=["csv"])
-
-    if uploaded_file is not None:
-        df = pd.read_csv(uploaded_file)
-        st.success("✅ Dosya Başarıyla Yüklendi!")
-
-        max_gun = df['Gün'].max()
-
-        for gun in range(1, max_gun+1):
-            gunluk_oda = df[df['Gün'] == gun].iloc[0]
-            oda_bilgileri.append({
-                "tek": gunluk_oda['Tek Kişilik Oda Sayısı'],
-                "cift": gunluk_oda['Çift Kişilik Oda Sayısı'],
-                "tek_f": gunluk_oda['Tek Kişilik Fiyat'],
-                "cift_f": gunluk_oda['Çift Kişilik Fiyat'],
-            })
-
-            gunluk_etkinlikler = []
-            gun_df = df[df['Gün'] == gun]
-            for idx, row in gun_df.iterrows():
-                gunluk_etkinlikler.append({
-                    "tur": row['Etkinlik Türü'],
-                    "kisi": row['Katılımcı Sayısı'],
-                    "fiyat": row['Etkinlik Fiyatı']
-                })
-            etkinlikler.append(gunluk_etkinlikler)
+})
 
 # Eğer Manuel Giriş Seçilirse
 else:
