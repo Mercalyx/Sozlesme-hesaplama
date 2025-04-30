@@ -74,7 +74,7 @@ if giris_yontemi == "Tabloyla Giriş":
             "tek": tek,
             "cift": cift,
             "tek_f": tek_f,
-            "cift_f": cift_f
+            "cift_f": cift_f
         })
 
 
