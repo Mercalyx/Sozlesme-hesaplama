@@ -26,13 +26,37 @@ st.markdown("---")
 st.header("📋 Veri Giriş Yöntemi Seçimi")
 giris_yontemi = st.radio(
     "Verileri nasıl gireceksiniz?",
-    ("Dosya Yükleyerek", "Manuel Giriş")
+    ("Tablo ile", "Dosya Yükleyerek", "Manuel Giriş")
 )
 
 st.markdown("---")
 
 oda_bilgileri = []
 etkinlikler = []
+
+# Eğer Tablo ile Yüklenirse
+if giris_yontemi == "Tabloyla Giriş":
+    st.header("📅 Etkinlik Bilgileri (Tablolu Giriş)")
+
+    if "etkinlik_tablosu" not in st.session_state:
+        st.session_state.etkinlik_tablosu = []
+
+    if st.button("➕ Etkinlik Satırı Ekle"):
+        st.session_state.etkinlik_tablosu.append({})
+
+    for idx, row in enumerate(st.session_state.etkinlik_tablosu):
+        st.markdown(f"*Etkinlik Satırı {idx+1}*")
+        tarih = st.date_input(f"Tarih {idx+1}", key=f"etkinlik_tarih_{idx}")
+        etkinlik_turu = st.text_input(f"Etkinlik Türü {idx+1}", key=f"etkinlik_tur_{idx}")
+        kisi = st.number_input(f"Katılımcı Sayısı {idx+1}", min_value=0, key=f"etkinlik_kisi_{idx}")
+        fiyat = st.number_input(f"Kişi Başı Fiyat {idx+1}", min_value=0.0, key=f"etkinlik_fiyat_{idx}")
+
+        etkinlik = {"tur": etkinlik_turu, "kisi": kisi, "fiyat": fiyat}
+        if len(etkinlikler) <= idx:
+            etkinlikler.append([etkinlik])
+        else:
+            etkinlikler[idx] = [etkinlik]
+
 
 # Eğer Dosya Yüklenirse
 if giris_yontemi == "Dosya Yükleyerek":
