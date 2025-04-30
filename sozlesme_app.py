@@ -35,7 +35,7 @@ oda_bilgileri = []
 etkinlikler = []
 
 # Eğer Tablo ile Yüklenirse
-elif giris_yontemi == "Tabloyla Giriş":
+if giris_yontemi == "Tabloyla Giriş":
     st.header("📅 Etkinlik Tablosu")
     etkinlik_df = pd.DataFrame({
         "Tarih": [""],
