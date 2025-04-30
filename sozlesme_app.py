@@ -26,56 +26,13 @@ st.markdown("---")
 st.header("📋 Veri Giriş Yöntemi Seçimi")
 giris_yontemi = st.radio(
     "Verileri nasıl gireceksiniz?",
-    ("Tabloyla Giriş", "Dosya Yükleyerek", "Manuel Giriş")
+    ("Dosya Yükleyerek", "Manuel Giriş")
 )
 
 st.markdown("---")
 
 oda_bilgileri = []
 etkinlikler = []
-
-# Eğer Tablo ile Yüklenirse
-elif giris_yontemi == "Tabloyla Giriş":
-    st.header("📅 Etkinlik Bilgileri Tablosu")
-    etkinlik_df = pd.DataFrame({
-        "Tarih": [""],
-        "Etkinlik Türü": [""],
-        "Katılımcı Sayısı": [0],
-        "Kişi Başı Fiyat": [0.0]
-    })
-    etkinlik_input = st.data_editor(etkinlik_df, num_rows="dynamic", use_container_width=True)
-
-    st.header("🛏 Konaklama Bilgileri Tablosu")
-    konaklama_df = pd.DataFrame({
-        "Tarih": [""],
-        "Oda Türü": [""],
-        "Oda Sayısı": [0],
-        "Gecelik Fiyat": [0.0]
-    })
-    konaklama_input = st.data_editor(konaklama_df, num_rows="dynamic", use_container_width=True)
-
-    etkinlikler = []
-    for _, row in etkinlik_input.iterrows():
-        etkinlikler.append([{
-            "tur": row["Etkinlik Türü"],
-            "kisi": int(row["Katılımcı Sayısı"]),
-            "fiyat": float(row["Kişi Başı Fiyat"])
-        }])
-
-    oda_bilgileri = []
-    for _, row in konaklama_input.iterrows():
-        tek = int(row["Oda Sayısı"]) if row["Oda Türü"] == "Tek" else 0
-        cift = int(row["Oda Sayısı"]) if row["Oda Türü"] == "Çift" else 0
-        tek_f = float(row["Gecelik Fiyat"]) if row["Oda Türü"] == "Tek" else 0.0
-        cift_f = float(row["Gecelik Fiyat"]) if row["Oda Türü"] == "Çift" else 0.0
-
-        oda_bilgileri.append({
-            "tek": tek,
-            "cift": cift,
-            "tek_f": tek_f,
-            "cift_f": cift_f
-        })
-
 
 # Eğer Dosya Yüklenirse
 if giris_yontemi == "Dosya Yükleyerek":
@@ -267,4 +224,3 @@ st.download_button(
 )
 
 st.success("✅ Teklif Excel dosyasını indirebilirsiniz!")
-
