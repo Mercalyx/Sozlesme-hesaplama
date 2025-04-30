@@ -26,13 +26,67 @@ st.markdown("---")
 st.header("📋 Veri Giriş Yöntemi Seçimi")
 giris_yontemi = st.radio(
     "Verileri nasıl gireceksiniz?",
-    ("Dosya Yükleyerek", "Manuel Giriş")
+    ("Dosya Yükleyerek", "Manuel Giriş", "Tabloyla Giriş")
 )
 
 st.markdown("---")
 
 oda_bilgileri = []
 etkinlikler = []
+
+elif giris_yontemi == "Tabloyla Giriş":
+    st.header("📅 Etkinlik Tablosu")
+    etkinlik_df = pd.DataFrame({
+        "Tarih": [""],
+        "Etkinlik Türü": [""],
+        "Katılımcı Sayısı": [0],
+        "Kişi Başı Fiyat": [0.0]
+    })
+    etkinlik_input = st.data_editor(etkinlik_df, num_rows="dynamic", use_container_width=True)
+
+    st.header("🛏 Konaklama Tablosu")
+    konaklama_df = pd.DataFrame({
+        "Tarih": [""],
+        "Oda Türü": [""],  # "Tek" ya da "Çift"
+        "Oda Sayısı": [0],
+        "Gecelik Fiyat": [0.0]
+    })
+    konaklama_input = st.data_editor(konaklama_df, num_rows="dynamic", use_container_width=True)
+
+    # Etkinlik verisini işle
+    etkinlikler = []
+    grouped = etkinlik_input.groupby("Tarih")
+    for tarih, grup in grouped:
+        gunluk_etkinlikler = []
+        for _, row in grup.iterrows():
+            gunluk_etkinlikler.append({
+                "tur": row["Etkinlik Türü"],
+                "kisi": int(row["Katılımcı Sayısı"]),
+                "fiyat": float(row["Kişi Başı Fiyat"])
+            })
+        etkinlikler.append(gunluk_etkinlikler)
+
+    # Oda verisini işle
+    oda_bilgileri = []
+    grouped_konaklama = konaklama_input.groupby("Tarih")
+    for tarih, grup in grouped_konaklama:
+        tek = 0
+        cift = 0
+        tek_f = 0.0
+        cift_f = 0.0
+        for _, row in grup.iterrows():
+            if row["Oda Türü"] == "Tek":
+                tek += int(row["Oda Sayısı"])
+                tek_f = float(row["Gecelik Fiyat"])
+            elif row["Oda Türü"] == "Çift":
+                cift += int(row["Oda Sayısı"])
+                cift_f = float(row["Gecelik Fiyat"])
+        oda_bilgileri.append({
+            "tek": tek,
+            "cift": cift,
+            "tek_f": tek_f,
+            "cift_f": cift_f
+        })
 
 # Eğer Dosya Yüklenirse
 if giris_yontemi == "Dosya Yükleyerek":
