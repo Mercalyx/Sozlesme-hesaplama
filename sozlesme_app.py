@@ -70,12 +70,14 @@ elif giris_yontemi == "Tabloyla Giriş":
         tek_f = float(row["Gecelik Fiyat"]) if row["Oda Türü"] == "Tek" else 0.0
         cift_f = float(row["Gecelik Fiyat"]) if row["Oda Türü"] == "Çift" else 0.0
 
-        oda_bilgileri.append([{
+      oda_bilgileri.append({
             "tek": tek,
             "cift": cift,
             "tek_f": tek_f,
             "cift_f": cift_f
-        }])
+        })
+
+
 
 # Eğer Dosya Yüklenirse
 if giris_yontemi == "Dosya Yükleyerek":
