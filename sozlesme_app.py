@@ -34,7 +34,7 @@ st.markdown("---")
 oda_bilgileri = []
 etkinlikler = []
 
-elif giris_yontemi == "Tabloyla Giriş":
+if giris_yontemi == "Tabloyla Giriş":
     st.header("📅 Etkinlik Tablosu")
     etkinlik_df = pd.DataFrame({
         "Tarih": [""],
@@ -89,7 +89,7 @@ elif giris_yontemi == "Tabloyla Giriş":
         })
 
 # Eğer Dosya Yüklenirse
-if giris_yontemi == "Dosya Yükleyerek":
+elif giris_yontemi == "Dosya Yükleyerek":
     st.header("📂 Booking Verisi Yükle")
     uploaded_file = st.file_uploader("Booking Verisini Yükleyin (CSV formatında)", type=["csv"])
 
