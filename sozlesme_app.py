@@ -26,7 +26,7 @@ st.markdown("---")
 st.header("📋 Veri Giriş Yöntemi Seçimi")
 giris_yontemi = st.radio(
     "Verileri nasıl gireceksiniz?",
-    ("Tablo ile", "Dosya Yükleyerek", "Manuel Giriş")
+    ("Tabloyla Giriş", "Dosya Yükleyerek", "Manuel Giriş")
 )
 
 st.markdown("---")
