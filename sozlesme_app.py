@@ -35,8 +35,8 @@ oda_bilgileri = []
 etkinlikler = []
 
 # Eğer Tablo ile Yüklenirse
-if giris_yontemi == "Tabloyla Giriş":
-    st.header("📅 Etkinlik Tablosu")
+elif giris_yontemi == "Tabloyla Giriş":
+    st.header("📅 Etkinlik Bilgileri Tablosu")
     etkinlik_df = pd.DataFrame({
         "Tarih": [""],
         "Etkinlik Türü": [""],
@@ -45,7 +45,7 @@ if giris_yontemi == "Tabloyla Giriş":
     })
     etkinlik_input = st.data_editor(etkinlik_df, num_rows="dynamic", use_container_width=True)
 
-    st.markdown("### 🛏 Konaklama Tablosu")
+    st.header("🛏 Konaklama Bilgileri Tablosu")
     konaklama_df = pd.DataFrame({
         "Tarih": [""],
         "Oda Türü": [""],
@@ -54,7 +54,6 @@ if giris_yontemi == "Tabloyla Giriş":
     })
     konaklama_input = st.data_editor(konaklama_df, num_rows="dynamic", use_container_width=True)
 
-    # DataFrame → Liste dönüşümü
     etkinlikler = []
     for _, row in etkinlik_input.iterrows():
         etkinlikler.append([{
@@ -75,7 +74,7 @@ if giris_yontemi == "Tabloyla Giriş":
             "cift": cift,
             "tek_f": tek_f,
             "cift_f": cift_f
-        })
+        })
 
 
 # Eğer Dosya Yüklenirse
