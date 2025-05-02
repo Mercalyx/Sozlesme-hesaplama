@@ -30,7 +30,7 @@ def replace_room_table(doc: Document, konaklama_data: list):  # <-- tamamı bura
                 row_cells[3].text = f"{fiyat:.2f}"
                 row_cells[4].text = f"{toplam:.2f}"
 
-            doc._body._body.insert(i + 1, table._tbl)
+    doc._body._body.insert(i + 1, table._tbl)
     break
 
 st.set_page_config(page_title="Sözleşme Hesaplama Robotu", page_icon="🧾")
