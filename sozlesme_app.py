@@ -279,7 +279,7 @@ if giris_yontemi == "Tabloyla Giriş":
 
     if st.button("Sözleşmeyi Word Formatında Oluştur"):
         try:
-            doc = Document("1- Standard Agreement - TR.docx")
+            doc = Document("1- Standard Agreement - TR.DOCX")
             replace_room_table(doc, konaklama_input.to_dict(orient="records"))
             doc.save("sozlesme_dolu.docx")
 
