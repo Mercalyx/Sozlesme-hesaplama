@@ -1,6 +1,37 @@
 import streamlit as st
 import pandas as pd
 import io
+from docx import Document  # <-- yeni eklenecek
+
+def replace_room_table(doc: Document, konaklama_data: list):  # <-- tamamı buraya yapıştır
+    for i, paragraph in enumerate(doc.paragraphs):
+        if "{{room_table}}" in paragraph.text:
+            paragraph.text = ""
+            table = doc.add_table(rows=1, cols=5)
+            table.style = 'Table Grid'
+            hdr_cells = table.rows[0].cells
+            hdr_cells[0].text = "Tarih"
+            hdr_cells[1].text = "Oda Türü"
+            hdr_cells[2].text = "Oda Sayısı"
+            hdr_cells[3].text = "Gecelik Fiyat"
+            hdr_cells[4].text = "Toplam Tutar"
+
+            for row in konaklama_data:
+                tarih = str(row.get("Tarih", ""))
+                oda_turu = str(row.get("Oda Türü", ""))
+                sayi = int(row.get("Oda Sayısı", 0))
+                fiyat = float(row.get("Gecelik Fiyat", 0))
+                toplam = sayi * fiyat
+
+                row_cells = table.add_row().cells
+                row_cells[0].text = tarih
+                row_cells[1].text = oda_turu
+                row_cells[2].text = str(sayi)
+                row_cells[3].text = f"{fiyat:.2f}"
+                row_cells[4].text = f"{toplam:.2f}"
+
+            doc._body._body.insert(i + 1, table._tbl)
+            break
 
 st.set_page_config(page_title="Sözleşme Hesaplama Robotu", page_icon="🧾")
 
@@ -240,6 +271,27 @@ st.write(f"Damga Vergisi: {damga_vergisi:,.2f} {sembol}")
 st.write(f"Genel Toplam: {toplam_tutar:,.2f} {sembol}")
 st.subheader(f"🔵 İlk Ödeme (30%): {ilk_odeme:,.2f} {sembol}")
 st.subheader(f"🔵 Kalan Ödeme (70%): {son_odeme:,.2f} {sembol}")
+
+st.markdown("---")
+
+if giris_yontemi == "Tabloyla Giriş":
+    st.markdown("### 📄 Word Sözleşmesi Oluştur")
+
+    if st.button("Sözleşmeyi Word Formatında Oluştur"):
+        try:
+            doc = Document("1- Standard Agreement - TR.docx")
+            replace_room_table(doc, konaklama_input.to_dict(orient="records"))
+            doc.save("sozlesme_dolu.docx")
+
+            with open("sozlesme_dolu.docx", "rb") as f:
+                st.download_button(
+                    label="📥 Word Olarak İndir",
+                    data=f,
+                    file_name="sozlesme_dolu.docx",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                )
+        except Exception as e:
+            st.error(f"Sözleşme oluşturulurken hata oluştu: {e}")
 
 st.markdown("---")
 
